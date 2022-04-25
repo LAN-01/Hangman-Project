@@ -11,29 +11,29 @@ rightLeg: .asciiz "\n +---+       \n O   |       \n/|\\  |       \n/ \\  |     \
 .text
 main: 
 la $a0, start 
-li $v0, 4	# syscall to display string
+li $v0, 4	
 syscall
 
 la $a0, head
-li $v0, 4	# syscall to display string
+li $v0, 4	
 syscall
 
 la $a0, body
-li $v0, 4	# syscall to display string
+li $v0, 4	
 syscall
 
 la $a0, leftArm
-li $v0, 4	# syscall to display string
+li $v0, 4	
 syscall
 
 la $a0, rightArm
-li $v0, 4	# syscall to display string
+li $v0, 4
 syscall
 
 la $a0, leftLeg
-li $v0, 4	# syscall to display string
+li $v0, 4	
 syscall
 
 la $a0, rightLeg
-li $v0, 4	# syscall to display string
+li $v0, 4	
 syscall
