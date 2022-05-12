@@ -8,8 +8,7 @@
   msg2: .asciiz "\nYour character appears this many times in the word: "
   msg3: .asciiz "\n"
   complete: "Congrats! The word is: "
-  key: .asciiz "supercali"
-  key2: .asciiz "supercali"
+  key: .asciiz "computer"
   userInput: .space 2
   beginningMessage: .asciiz "Welcome to Hangman! Enter letters that make up the secret word."
   failedMsg: .asciiz "Sorry you lose!"
@@ -30,6 +29,8 @@ li $s0, 0
 la $a0, beginningMessage
 li $v0, 4
 syscall
+
+
 
 main:
  
@@ -58,20 +59,21 @@ syscall
 compareGuess:
 la $s2, key	#$s2 = keyword
 move $t2, $s2
+move $t4, $s2
 la $s3, userInput	#$s3 = user's guess
 move $t3,$s3
 lb $t3, ($s3)
 	
 	L1:
-	lb $t2,($s2)
+	lb $t2,($t4)
 	beq $t2,$t3, L2	#if characters are equal, jump to L2
 	beq $t2,$zero, count #if index = zero(non element), jump to exit
-	addi $s2,$s2,1	#else, continue itteration
+	addi $t4,$t4,1	#else, continue itteration
 	addi $t0, $t0,1
 	j L1
 	L2:
 	addi $t7,$t7,1	#records that character appears in the word
-	addi $s2,$s2,1
+	addi $t4,$t4,1
 	addi $t0, $t0, 1
 	j L1
  
@@ -119,7 +121,7 @@ addinto:
  	    #loop through the word
  	    beq $t8, $t2, exitloop  
   	    #new address
-  	    add $t5, $t4, $t8
+  	    add $t5, $s2, $t8
             lb $s4, ($t5)
              
       	    li $t9,0
