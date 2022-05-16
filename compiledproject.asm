@@ -13,7 +13,8 @@
   beginningMessage: .asciiz "Welcome to Hangman! Enter letters that make up the secret word."
   failedMsg: .asciiz "Sorry you lose!"
   
- start: .asciiz " +---+       \n     |       \n     |       \n     |     \n------"
+  
+start: .asciiz " +---+       \n     |       \n     |       \n     |     \n------"
 head: .asciiz "\n +---+       \n O   |       \n     |       \n     |     \n------"
 body: .asciiz "\n +---+       \n O   |       \n |   |       \n     |     \n------"
 leftArm: .asciiz "\n +---+       \n O   |      \n/|   |       \n     |     \n------"
@@ -24,8 +25,8 @@ rightLeg: .asciiz "\n +---+       \n O   |       \n/|\\  |       \n/ \\  |     \
 
 .text 
 
-li $s0, 0
 
+#print beginning message
 la $a0, beginningMessage
 li $v0, 4
 syscall
@@ -34,10 +35,12 @@ syscall
 
 main:
  
- li $t0, 0
+ li $t0, 0 #$t0 = 0
+ 
+ #checks to see if user is out of turns
  beq $s7, 7, exit
  la $t1, correctarray  #load address of correct array
- 
+
  la $t7, 0
 
 la $a0, msg1 #prompt user to enter a character
@@ -94,13 +97,19 @@ count: 	#Stores correct letter in array
         syscall
         
         
-	la $t4, key
+	
+	move $t2, $t0
 	bgt $t7, $zero, addinto
 	addi $s7, $s7, 1 
-	j exitloop
+	la $a0, msg3
+	li $v0, 4
+  	syscall
+  	li $t8, 0
+  	li $t0, 0
+	j firstloop
 	
 addinto:
-	move $t2, $t0
+	
 	add $t0, $t1, $s0  #index of array
         sb $t3, ($t0)   #store byte 
         
@@ -113,7 +122,7 @@ addinto:
        syscall
        
        
-       li $t8, 0
+        li $t8, 0
   	li $t0, 0
 
  firstloop: 
