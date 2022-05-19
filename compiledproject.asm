@@ -1,5 +1,3 @@
-#Christian Williams
-
 .data
 
   correctarray: .space 20
@@ -8,11 +6,14 @@
   msg2: .asciiz "\nYour character appears this many times in the word: "
   msg3: .asciiz "\n"
   complete: "Congrats! The word is: "
-  key: .asciiz "computer"
+  guessArray: .space 100
   userInput: .space 2
-  beginningMessage: .asciiz "Welcome to Hangman! Enter letters that make up the secret word."
+  beginningMessage: .asciiz "Welcome to Hangman! The aim of the game is to figure out the word before you run out of guesses. \nThis game was created by Christian Williams, James Avila, Jana Georgievski, Luis Navarrete.\nFirst you will choose a difficulty. Choose 1 for easy, 2 for normal, or 3 for hard.\n"
   failedMsg: .asciiz "Sorry you lose!"
-  
+  easyWord: .asciiz "books"
+  normalWord: .asciiz "college"
+  hardWord: .asciiz "abruptly"
+  tryAgainmsg: .asciiz "\nThis letter was already guessed correctly, try again. \n"
   
 start: .asciiz " +---+       \n     |       \n     |       \n     |     \n------"
 head: .asciiz "\n +---+       \n O   |       \n     |       \n     |     \n------"
@@ -22,16 +23,36 @@ rightArm: .asciiz "\n +---+       \n O   |       \n/|\\  |       \n     |     \n
 leftLeg: .asciiz "\n +---+       \n O   |       \n/|\\  |       \n/    |     \n------"
 rightLeg: .asciiz "\n +---+       \n O   |       \n/|\\  |       \n/ \\  |     \n------"
 
+num1: .word 1
+num2: .word 2
+num3: .word 3
 
 .text 
-
 
 #print beginning message
 la $a0, beginningMessage
 li $v0, 4
 syscall
 
+li $v0, 5
+syscall
 
+move $t0, $v0
+beq $t0, 1, easy
+beq $t0, 2, normal
+beq $t0, 3, hard
+
+easy:
+la $s1, easyWord
+j main
+
+normal:
+la $s1, normalWord
+j main
+
+hard:
+la $s1, hardWord
+j main
 
 main:
  
@@ -42,17 +63,25 @@ main:
  la $t1, correctarray  #load address of correct array
 
  la $t7, 0
-
-la $a0, msg1 #prompt user to enter a character
-li $v0, 4
-syscall
+ 
+ j askUser
+ 
+ again: 
+ 	la $a0, tryAgainmsg
+ 	li $v0, 4
+ 	syscall
+ 	
+ 
+askUser: la $a0, msg1 #prompt user to enter a character
+ 	 li $v0, 4
+ 	 syscall
 
 
 #read the character from user
-li $v0, 8
-la $a0, userInput
-li $a1, 2
-syscall
+ 	  li $v0, 8
+ 	  la $a0, userInput
+ 	  li $a1, 2
+	  syscall
 
 
 
@@ -60,17 +89,34 @@ syscall
 
 
 compareGuess:
-la $s2, key	#$s2 = keyword
-move $t2, $s2
-move $t4, $s2
+move $t2, $s1
+move $t4, $s1
 la $s3, userInput	#$s3 = user's guess
 move $t3,$s3
 lb $t3, ($s3)
-	
+li $t9, 0
+previousGuess: 
+
+  	la $t5, guessArray #$t5 = previous guesses
+     	
+        guessLoop:
+        bgt $t9, $s2,guessLoopEnd 
+        add $t7, $t5, $t9
+    	lb $t6, 0($t7)
+        beq $t6,$t3, again
+        addi $t9,$t9,1
+        j guessLoop
+
+    guessLoopEnd:
+    add $t8, $t5, $s2
+    sb $t3,0($t8) 
+    addi $s2,$s2,1
+
+	li $t7,0
 	L1:
 	lb $t2,($t4)
 	beq $t2,$t3, L2	#if characters are equal, jump to L2
-	beq $t2,$zero, count #if index = zero(non element), jump to exit
+	beq $t2,$zero, loadt #if index = zero(non element), jump to exit
 	addi $t4,$t4,1	#else, continue itteration
 	addi $t0, $t0,1
 	j L1
@@ -81,13 +127,22 @@ lb $t3, ($s3)
 	j L1
  
 
+loadt: 	li $t8, 0
+	li $t2, 0
+	li $t5, 0
+	li $t6, 0
+	li $t9, 0
 
 
-
+	   
 
 
 
 count: 	#Stores correct letter in array
+
+	li $t2, 0
+	li $t5, 0
+	li $t6, 0
 	
 	la $a0, msg2 #character appearance message
         li $v0, 4
@@ -97,7 +152,6 @@ count: 	#Stores correct letter in array
         syscall
         
         
-	
 	move $t2, $t0
 	bgt $t7, $zero, addinto
 	addi $s7, $s7, 1 
@@ -109,7 +163,6 @@ count: 	#Stores correct letter in array
 	j firstloop
 	
 addinto:
-	
 	add $t0, $t1, $s0  #index of array
         sb $t3, ($t0)   #store byte 
         
@@ -126,11 +179,12 @@ addinto:
   	li $t0, 0
 
  firstloop: 
- 	   
+ 	   li $t5, 0
+ 	   li $t0, 0
  	    #loop through the word
  	    beq $t8, $t2, exitloop  
   	    #new address
-  	    add $t5, $s2, $t8
+  	    add $t5, $s1, $t8
             lb $s4, ($t5)
              
       	    li $t9,0
@@ -175,8 +229,7 @@ addinto:
   li $v0, 4
   syscall
   
-
-  la $a0, key
+  move $a0, $s1
   li $v0, 4
   syscall
   
